@@ -1,0 +1,160 @@
+import java.util.Scanner;
+
+public class TicTacToeUnbeatable {
+    static char[] board = new char[9];
+    static char player = 'X';
+    static char computer = 'O';
+    static int[][] winningCombinations = {
+        {0, 1, 2}, {3, 4, 5}, {6, 7, 8},
+        {0, 3, 6}, {1, 4, 7}, {2, 5, 8},
+        {0, 4, 8}, {2, 4, 6}
+    };
+
+    public static void main(String[] args) {
+        initializeBoard();
+        printBoard();
+
+        while (true) {
+            if (!isBoardFull() && !isWinner(player) && !isWinner(computer)) {
+                p1move();
+                printBoard();
+
+                if (isWinner(player)) {
+                    System.out.println("Congratulations, You won the match!");
+                    break;
+                } else if (isBoardFull()) {
+                    System.out.println("It's a draw match, let's play again!");
+                    break;
+                }
+
+                c1move();
+                printBoard();
+
+                if (isWinner(computer)) {
+                    System.out.println("Sorry, the AI won!");
+                    break;
+                } else if (isBoardFull()) {
+                    System.out.println("It's a draw match, let's play again!");
+                    break;
+                }
+            } else {
+                System.out.println("Game over!");
+                break;
+            }
+        }
+    }
+
+    static void initializeBoard() {
+        for (int i = 0; i < 9; i++) {
+            board[i] = ' ';
+        }
+    }
+
+    static void printBoard() {
+        for (int i = 0; i < 9; i += 3) {
+            System.out.println(board[i] + " | " + board[i+1] + " | " + board[i+2]);
+            if (i < 6) {
+                System.out.println("-".repeat(9));
+            }
+        }
+        System.out.println();
+    }
+
+    static boolean isWinner(char player) {
+        for (int[] combo : winningCombinations) {
+            if (board[combo[0]] == player && board[combo[1]] == player && board[combo[2]] == player) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static boolean isBoardFull() {
+        for (char cell : board) {
+            if (cell == ' ') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    static int minimax(char[] board, int depth, boolean isMaximizing) {
+        if (isWinner(computer)) {
+            return 1;
+        }
+        if (isWinner(player)) {
+            return -1;
+        }
+        if (isBoardFull()) {
+            return 0;
+        }
+        if (isMaximizing) {
+            int maxEval = Integer.MIN_VALUE;
+            for (int i = 0; i < 9; i++) {
+                if (board[i] == ' ') {
+                    board[i] = computer;
+                    int eval = minimax(board, depth + 1, false);
+                    board[i] = ' ';
+                    maxEval = Math.max(maxEval, eval);
+                }
+            }
+            return maxEval;
+        } else {
+            int minEval = Integer.MAX_VALUE;
+            for (int i = 0; i < 9; i++) {
+                if (board[i] == ' ') {
+                    board[i] = player;
+                    int eval = minimax(board, depth + 1, true);
+                    board[i] = ' ';
+                    minEval = Math.min(minEval, eval);
+                }
+            }
+            return minEval;
+        }
+    }
+
+    static void c1move() {
+        int bestScore = Integer.MIN_VALUE;
+        int bestMove = -1;
+
+        for (int i = 0; i < 9; i++) {
+            if (board[i] == ' ') {
+                board[i] = computer;
+                int score = minimax(board, 0, false);
+                board[i] = ' ';
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMove = i;
+                }
+            }
+        }
+
+        if (bestMove != -1) {
+            board[bestMove] = computer;
+        }
+    }
+    static void p1move() {
+        int row, col;
+        Scanner scanner = new Scanner(System.in);
+
+        while (true) {
+            try {
+                System.out.print("Enter your move (row [0-2] and column [0-2]): ");
+                row = scanner.nextInt();
+                col = scanner.nextInt();
+
+                if (row >= 0 && row <= 2 && col >= 0 && col <= 2 && board[row * 3 + col] == ' ') {
+                    break; // Valid input
+                } else {
+                    System.out.println("Invalid move. Please try again.");
+                }
+            } catch (java.util.InputMismatchException e) {
+                System.out.println("Invalid input. Please enter integers for row and column.");
+                scanner.nextLine(); // Clear the input buffer
+            }
+        }
+
+        board[row * 3 + col] = player;
+    }
+}
